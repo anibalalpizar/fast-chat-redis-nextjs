@@ -1,6 +1,12 @@
+import ChatLayout from "@/components/chat/ChatLayout"
 import PreferenceTab from "@/components/PreferenceTab"
+import { cookies } from "next/headers"
 
-function page() {
+async function page() {
+  const cookieData = await cookies()
+  const layout = cookieData.get("react-resizable-panel:layout")
+  const defaultLayout = layout?.value ? JSON.parse(layout.value) : undefined
+
   return (
     <main className="flex h-screen flex-col items-center justify-center p-4 md:px-24 py-32 gap-4">
       <PreferenceTab />
@@ -9,6 +15,9 @@ function page() {
 				dark:bg-[size:20px_20px] bg-[#ffffff] bg-[radial-gradient(#00000033_1px,#ffffff_1px)] bg-[size:20px_20px]"
         aria-hidden="true"
       />
+      <div className="z-10 border rounded-lg max-w-5xl w-full min-h-[85vh] text-sm lg:flex">
+        <ChatLayout defaultLayout={defaultLayout} />
+      </div>
     </main>
   )
 }
