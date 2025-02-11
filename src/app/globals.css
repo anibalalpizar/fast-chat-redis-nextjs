@@ -70,3 +70,19 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-slider-thumb {
+    background-color: hsl(var(--muted));
+    border-radius: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    border-color: hsl(var(--background));
+  }
+}
