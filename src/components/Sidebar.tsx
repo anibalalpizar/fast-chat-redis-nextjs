@@ -1,4 +1,6 @@
 import { LogOut } from "lucide-react"
+import useSound from "use-sound"
+
 import { cn } from "@/lib/utils"
 import { USERS } from "@/db/dummy"
 import { ScrollArea } from "./ui/scroll-area"
@@ -10,13 +12,17 @@ import {
 } from "./ui/tooltip"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Button } from "./ui/button"
+import { usePreferences } from "@/store/usePreferences"
 
 interface SidebarProps {
   isCollapsed: boolean
 }
 
 function Sidebar({ isCollapsed }: SidebarProps) {
+  const { soundEnabled } = usePreferences()
   const selectedUser = USERS[0]
+  const [play] = useSound("/sounds/click.mp3")
+
   return (
     <div className="group relative flex flex-col h-full gap-4 p-2 data-[collapsed=true]:p-2 max-h-full overflow-auto bg-background">
       {!isCollapsed && (
@@ -62,6 +68,9 @@ function Sidebar({ isCollapsed }: SidebarProps) {
                 selectedUser.email === user.email &&
                   "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hovertext-white shrink"
               )}
+              onClick={() => {
+                if (soundEnabled) play()
+              }}
               variant="gray"
               size="xl"
             >
