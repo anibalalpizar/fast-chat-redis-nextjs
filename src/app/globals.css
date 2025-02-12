@@ -86,3 +86,7 @@ body {
     border-color: hsl(var(--background));
   }
 }
+
+.bg-noise {
+  background-image: url("/noise.svg");
+}
