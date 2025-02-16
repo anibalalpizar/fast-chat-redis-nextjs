@@ -1,11 +1,17 @@
 import ChatLayout from "@/components/chat/ChatLayout"
 import PreferenceTab from "@/components/PreferenceTab"
+import { redis } from "@/lib/db"
 import { cookies } from "next/headers"
 
 async function page() {
   const cookieData = await cookies()
   const layout = cookieData.get("react-resizable-panel:layout")
   const defaultLayout = layout?.value ? JSON.parse(layout.value) : undefined
+
+  await redis.set("foo", "bar")
+
+  const data = await redis.get("foo")
+  console.log(data)
 
   return (
     <main className="flex h-screen flex-col items-center justify-center p-4 md:px-24 py-32 gap-4">
