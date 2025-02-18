@@ -1,7 +1,20 @@
-import { Loader } from "lucide-react"
-import React from "react"
+"use client"
 
-function page() {
+import React from "react"
+import { useRouter } from "next/navigation"
+import { Loader } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import { checkAuthStatus } from "@/actions/auth.actions"
+
+function Page() {
+  const { data } = useQuery({
+    queryKey: ["authCheck"],
+    queryFn: async () => await checkAuthStatus(),
+  })
+  const router = useRouter()
+
+  if (data?.success) router.push("/")
+
   return (
     <div className="mt-20 w-full flex justify-center">
       <div className="flex flex-col items-center gap-2">
@@ -13,4 +26,4 @@ function page() {
   )
 }
 
-export default page
+export default Page
