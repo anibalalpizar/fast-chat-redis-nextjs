@@ -3,7 +3,7 @@ import useSound from "use-sound"
 import { LoginLink } from "@kinde-oss/kinde-auth-nextjs/components"
 
 import { cn } from "@/lib/utils"
-import { USERS } from "@/db/dummy"
+import { type User, USERS } from "@/db/dummy"
 import { ScrollArea } from "./ui/scroll-area"
 import {
   Tooltip,
@@ -17,9 +17,10 @@ import { usePreferences } from "@/store/usePreferences"
 
 interface SidebarProps {
   isCollapsed: boolean
+  users: User[]
 }
 
-function Sidebar({ isCollapsed }: SidebarProps) {
+function Sidebar({ isCollapsed, users }: SidebarProps) {
   const { soundEnabled } = usePreferences()
   const selectedUser = USERS[0]
   const [play] = useSound("/sounds/click.mp3")
@@ -34,7 +35,7 @@ function Sidebar({ isCollapsed }: SidebarProps) {
         </div>
       )}
       <ScrollArea className="gap-2 px-2 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2">
-        {USERS.map((user, index) =>
+        {users.map((user, index) =>
           isCollapsed ? (
             <TooltipProvider key={index}>
               <Tooltip delayDuration={0}>
