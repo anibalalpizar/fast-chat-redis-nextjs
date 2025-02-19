@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 
 import { cn } from "@/lib/utils"
+import type { User } from "@/db/dummy"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -14,9 +15,10 @@ import MessageContainer from "./MessageContainer"
 
 interface ChatLayoutProps {
   defaultLayout: number[] | undefined
+  users: User[]
 }
 
-function ChatLayout({ defaultLayout = [320, 480] }: ChatLayoutProps) {
+function ChatLayout({ defaultLayout = [320, 480], users }: ChatLayoutProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
 
@@ -58,7 +60,7 @@ function ChatLayout({ defaultLayout = [320, 480] }: ChatLayoutProps) {
           isCollapsed && "min-w-[80px] transition-all duration-300 ease-in-out"
         )}
       >
-        <Sidebar isCollapsed={isCollapsed} />
+        <Sidebar isCollapsed={isCollapsed} users={users} />
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
