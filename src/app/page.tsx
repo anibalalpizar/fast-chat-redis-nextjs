@@ -21,8 +21,6 @@ async function getUsers(): Promise<User[]> {
     userKeys.push(...keys)
   } while (cursor !== "0")
 
-  if (userKeys.length === 0) return []
-
   const { getUser } = getKindeServerSession()
   const currentUser = await getUser()
 
@@ -33,11 +31,11 @@ async function getUsers(): Promise<User[]> {
   const users: User[] = []
 
   for (const user of results) {
-    // if (user.id !== currentUser.id) {
-    users.push(user)
-    // }
+    // exclude the current user from the list of users in the sidebar
+    if (user.id !== currentUser?.id) {
+      users.push(user)
+    }
   }
-
   return users
 }
 
@@ -47,8 +45,7 @@ async function page() {
   const defaultLayout = layout?.value ? JSON.parse(layout.value) : undefined
 
   const { isAuthenticated } = getKindeServerSession()
-
-  if (await isAuthenticated()) return redirect("/")
+  if (!(await isAuthenticated())) return redirect("/auth")
 
   const users = await getUsers()
 
