@@ -1,19 +1,23 @@
 "use client"
 
-import React from "react"
+import React, { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Loader } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import { checkAuthStatus } from "@/actions/auth.actions"
 
 function Page() {
+  const router = useRouter()
   const { data } = useQuery({
     queryKey: ["authCheck"],
     queryFn: async () => await checkAuthStatus(),
   })
-  const router = useRouter()
 
-  if (data?.success) router.push("/")
+  useEffect(() => {
+    if (data?.success) {
+      router.push("/")
+    }
+  }, [data?.success, router])
 
   return (
     <div className="mt-20 w-full flex justify-center">
