@@ -38,6 +38,7 @@ function ChatBottonBar() {
       )}
       <AnimatePresence>
         <motion.div
+          key="message-input"
           layout
           initial={{ opacity: 0, scale: 1 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -71,6 +72,7 @@ function ChatBottonBar() {
         </motion.div>
         {message.trim() ? (
           <Button
+            key="send-button"
             className="h-9 w-9 dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted- dark:hover:text-white shrink-0"
             variant="ghost"
             size="icon"
@@ -79,6 +81,7 @@ function ChatBottonBar() {
           </Button>
         ) : (
           <Button
+            key="thumbs-up-button"
             className="h-9 w-9 dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted- dark:hover:text-white shrink-0"
             variant="ghost"
             size="icon"
