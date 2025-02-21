@@ -35,9 +35,9 @@ function Sidebar({ isCollapsed, users }: SidebarProps) {
         </div>
       )}
       <ScrollArea className="gap-2 px-2 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2">
-        {users.map((user, index) =>
+        {users.map((user) =>
           isCollapsed ? (
-            <TooltipProvider key={index}>
+            <TooltipProvider key={`tooltip-${user.id}`}>
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <div>
@@ -64,7 +64,7 @@ function Sidebar({ isCollapsed, users }: SidebarProps) {
             </TooltipProvider>
           ) : (
             <Button
-              key={index}
+              key={`button-${user.id}`}
               className={cn(
                 "w-full justify-start gap-4 my-1",
                 selectedUser.email === user.email &&
