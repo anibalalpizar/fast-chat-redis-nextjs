@@ -12,9 +12,9 @@ function MessageList() {
   return (
     <div className="w-full overflow-y-auto overflow-x-hidden h-full flex flex-col">
       <AnimatePresence>
-        {messages.map((message, index) => (
+        {messages.map((message) => (
           <motion.div
-            key={index}
+            key={`message-${message.id}`}
             layout
             initial={{ opacity: 0, scale: 1, y: 50, x: 0 }}
             animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
