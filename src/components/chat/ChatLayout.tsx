@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-
 import { cn } from "@/lib/utils"
 import type { User } from "@/db/dummy"
+import { useSelectedUser } from "@/store/useSelectedUser"
+
 import {
   ResizableHandle,
   ResizablePanel,
@@ -21,6 +22,7 @@ interface ChatLayoutProps {
 function ChatLayout({ defaultLayout = [320, 480], users }: ChatLayoutProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const { selectedUser } = useSelectedUser()
 
   useEffect(() => {
     const checkScreenWidth = () => setIsMobile(window.innerWidth < 768)
@@ -64,21 +66,23 @@ function ChatLayout({ defaultLayout = [320, 480], users }: ChatLayoutProps) {
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={defaultLayout[1]} minSize={30}>
-        {/* <div className="flex justify-center items-center h-full w-full px-10">
-          <div className="flex flex-col justify-center items-center gap-4">
-            <Image
-              src="vercel.svg"
-              alt="logo"
-              width={200}
-              height={200}
-              className="w-full md:w-2/3 lg:w-1/2"
-            />
-            <p className="text-muted-foreground text-center">
-              Click on a chat to view the messages
-            </p>
+        {!selectedUser && (
+          <div className="flex justify-center items-center h-full w-full px-10">
+            <div className="flex flex-col justify-center items-center gap-4">
+              <Image
+                src="vercel.svg"
+                alt="logo"
+                width={200}
+                height={200}
+                className="w-full md:w-2/3 lg:w-1/2"
+              />
+              <p className="text-muted-foreground text-center">
+                Click on a chat to view the messages
+              </p>
+            </div>
           </div>
-        </div> */}
-        <MessageContainer />
+        )}
+        {selectedUser && <MessageContainer />}
       </ResizablePanel>
     </ResizablePanelGroup>
   )
