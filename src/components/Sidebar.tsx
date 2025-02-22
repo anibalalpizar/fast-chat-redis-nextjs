@@ -1,9 +1,12 @@
 import { LogOut } from "lucide-react"
 import useSound from "use-sound"
 import { LoginLink } from "@kinde-oss/kinde-auth-nextjs/components"
-
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs"
 import { cn } from "@/lib/utils"
-import { type User, USERS } from "@/db/dummy"
+import { usePreferences } from "@/store/usePreferences"
+import { useSelectedUser } from "@/store/useSelectedUser"
+import type { User } from "@/db/dummy"
+
 import { ScrollArea } from "./ui/scroll-area"
 import {
   Tooltip,
@@ -13,7 +16,6 @@ import {
 } from "./ui/tooltip"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Button } from "./ui/button"
-import { usePreferences } from "@/store/usePreferences"
 
 interface SidebarProps {
   isCollapsed: boolean
@@ -22,8 +24,10 @@ interface SidebarProps {
 
 function Sidebar({ isCollapsed, users }: SidebarProps) {
   const { soundEnabled } = usePreferences()
-  const selectedUser = USERS[0]
   const [play] = useSound("/sounds/click.mp3")
+  const { setSelectedUser, selectedUser } = useSelectedUser()
+
+  const { user } = useKindeBrowserClient()
 
   return (
     <div className="group relative flex flex-col h-full gap-4 p-2 data-[collapsed=true]:p-2 max-h-full overflow-auto bg-background">
@@ -40,7 +44,12 @@ function Sidebar({ isCollapsed, users }: SidebarProps) {
             <TooltipProvider key={`tooltip-${user.id}`}>
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
-                  <div>
+                  <div
+                    onClick={() => {
+                      if (soundEnabled) play()
+                      setSelectedUser(user)
+                    }}
+                  >
                     <Avatar className="my-1 flex justify-center items-center">
                       <AvatarImage
                         src={user.image}
@@ -67,11 +76,12 @@ function Sidebar({ isCollapsed, users }: SidebarProps) {
               key={`button-${user.id}`}
               className={cn(
                 "w-full justify-start gap-4 my-1",
-                selectedUser.email === user.email &&
+                selectedUser?.email === user.email &&
                   "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hovertext-white shrink"
               )}
               onClick={() => {
                 if (soundEnabled) play()
+                setSelectedUser(user)
               }}
               variant="gray"
               size="xl"
@@ -97,13 +107,15 @@ function Sidebar({ isCollapsed, users }: SidebarProps) {
             <div className="hidden md:flex gap-2 items-center">
               <Avatar className="flex justify-center items-center">
                 <AvatarImage
-                  src={selectedUser.image}
-                  alt={selectedUser.name}
+                  src={user?.picture}
+                  alt={selectedUser?.name}
                   referrerPolicy="no-referrer"
                   className="w-8 h-8 border-2 border-white rounded-full"
                 />
               </Avatar>
-              <p className="font-bold">John Doe</p>
+              <p className="font-bold">
+                {user?.given_name} {user?.family_name}
+              </p>
             </div>
           )}
           <div className="flex">
