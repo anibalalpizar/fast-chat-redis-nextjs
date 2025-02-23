@@ -7,17 +7,20 @@ import {
   ThumbsUp,
 } from "lucide-react"
 import useSound from "use-sound"
+import { useMutation } from "@tanstack/react-query"
 
 import { Textarea } from "../ui/textarea"
 import EmojiPicker from "./EmojiPicker"
 import { Button } from "../ui/button"
 import { usePreferences } from "@/store/usePreferences"
+import { sendMessageAction } from "@/actions/message.action"
+import { useSelectedUser } from "@/store/useSelectedUser"
 
 function ChatBottonBar() {
-  const isPending = false
   const [message, setMessage] = useState("")
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const { soundEnabled } = usePreferences()
+  const { selectedUser } = useSelectedUser()
 
   const [playSound1] = useSound("/sounds/keystroke1.mp3")
   const [playSound2] = useSound("/sounds/keystroke2.mp3")
@@ -29,6 +32,34 @@ function ChatBottonBar() {
   const playRandomSound = () => {
     const randomIndex = Math.floor(Math.random() * playSoundFunctions.length)
     if (soundEnabled) playSoundFunctions[randomIndex]()
+  }
+
+  const { mutate: sendMessageMutate, isPending } = useMutation({
+    mutationFn: sendMessageAction,
+  })
+
+  const handleMessageSend = () => {
+    if (!message.trim()) return
+
+    sendMessageMutate({
+      content: message,
+      messageType: "text",
+      receiverId: selectedUser?.id,
+    })
+    setMessage("")
+    inputRef.current?.focus()
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      handleMessageSend()
+    }
+
+    if (e.key === "Enter" && e.shiftKey) {
+      e.preventDefault()
+      setMessage(message + "\n")
+    }
   }
 
   return (
@@ -60,6 +91,7 @@ function ChatBottonBar() {
               setMessage(e.target.value)
               playRandomSound()
             }}
+            onKeyDown={handleKeyDown}
           />
           <div className="absolute right-2 bottom-0.5">
             <EmojiPicker
@@ -76,6 +108,7 @@ function ChatBottonBar() {
             className="h-9 w-9 dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted- dark:hover:text-white shrink-0"
             variant="ghost"
             size="icon"
+            onClick={handleMessageSend}
           >
             <SendHorizonal size={20} className="text-muted-foreground" />
           </Button>
@@ -85,9 +118,20 @@ function ChatBottonBar() {
             className="h-9 w-9 dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted- dark:hover:text-white shrink-0"
             variant="ghost"
             size="icon"
+            onClick={handleMessageSend}
           >
             {!isPending && (
-              <ThumbsUp size={20} className="text-muted-foreground" />
+              <ThumbsUp
+                size={20}
+                className="text-muted-foreground"
+                onClick={() => {
+                  sendMessageMutate({
+                    content: "👍",
+                    messageType: "text",
+                    receiverId: selectedUser?.id,
+                  })
+                }}
+              />
             )}
             {isPending && <Loader size={20} className="animate-spin" />}
           </Button>
