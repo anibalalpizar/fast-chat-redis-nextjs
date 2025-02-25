@@ -1,4 +1,5 @@
 import { useRef, useState } from "react"
+import Image from "next/image"
 import { AnimatePresence, motion } from "framer-motion"
 import {
   Image as ImageIcon,
@@ -8,6 +9,10 @@ import {
 } from "lucide-react"
 import useSound from "use-sound"
 import { useMutation } from "@tanstack/react-query"
+import {
+  CldUploadWidget,
+  type CloudinaryUploadWidgetInfo,
+} from "next-cloudinary"
 
 import { Textarea } from "../ui/textarea"
 import EmojiPicker from "./EmojiPicker"
@@ -15,9 +20,12 @@ import { Button } from "../ui/button"
 import { usePreferences } from "@/store/usePreferences"
 import { sendMessageAction } from "@/actions/message.action"
 import { useSelectedUser } from "@/store/useSelectedUser"
+import { Dialog, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
+import { DialogContent } from "@radix-ui/react-dialog"
 
 function ChatBottonBar() {
   const [message, setMessage] = useState("")
+  const [imageUrl, setImageUrl] = useState("")
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const { soundEnabled } = usePreferences()
   const { selectedUser } = useSelectedUser()
@@ -44,7 +52,7 @@ function ChatBottonBar() {
     sendMessageMutate({
       content: message,
       messageType: "text",
-      receiverId: selectedUser?.id,
+      receiverId: selectedUser?.id ?? "",
     })
     setMessage("")
     inputRef.current?.focus()
@@ -65,8 +73,55 @@ function ChatBottonBar() {
   return (
     <div className="p-2 flex justify-between w-full items-center gap-2">
       {!message.trim() && (
-        <ImageIcon size={20} className="cursor-pointer text-muted-foreground" />
+        <CldUploadWidget
+          signatureEndpoint="/api/sign-cloudinary-params"
+          onSuccess={(result, { widget }) => {
+            setImageUrl((result.info as CloudinaryUploadWidgetInfo).secure_url)
+            widget.close()
+          }}
+        >
+          {({ open }) => {
+            return (
+              <ImageIcon
+                size={20}
+                className="cursor-pointer text-muted-foreground"
+                onClick={() => open()}
+              />
+            )
+          }}
+        </CldUploadWidget>
       )}
+      <Dialog open={!!imageUrl}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Image Preview</DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center items-center relative h-96 w-full mx-auto">
+            <Image
+              src={imageUrl}
+              alt="Image Preview"
+              fill
+              className="object-contain"
+            />
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="submit"
+              onClick={() => {
+                sendMessageMutate({
+                  content: imageUrl,
+                  messageType: "image",
+                  receiverId: selectedUser?.id ?? "",
+                })
+                setImageUrl("")
+              }}
+            >
+              Send
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <AnimatePresence>
         <motion.div
           key="message-input"
@@ -128,7 +183,7 @@ function ChatBottonBar() {
                   sendMessageMutate({
                     content: "👍",
                     messageType: "text",
-                    receiverId: selectedUser?.id,
+                    receiverId: selectedUser?.id ?? "",
                   })
                 }}
               />
