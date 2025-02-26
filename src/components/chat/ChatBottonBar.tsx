@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import { AnimatePresence, motion } from "framer-motion"
 import {
@@ -8,20 +8,23 @@ import {
   ThumbsUp,
 } from "lucide-react"
 import useSound from "use-sound"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   CldUploadWidget,
   type CloudinaryUploadWidgetInfo,
 } from "next-cloudinary"
+import { DialogContent } from "@radix-ui/react-dialog"
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs"
+import { usePreferences } from "@/store/usePreferences"
+import { sendMessageAction } from "@/actions/message.action"
+import { useSelectedUser } from "@/store/useSelectedUser"
+import { pusherClient } from "@/lib/pusher"
+import type { Message } from "@/db/dummy"
 
 import { Textarea } from "../ui/textarea"
 import EmojiPicker from "./EmojiPicker"
 import { Button } from "../ui/button"
-import { usePreferences } from "@/store/usePreferences"
-import { sendMessageAction } from "@/actions/message.action"
-import { useSelectedUser } from "@/store/useSelectedUser"
 import { Dialog, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
-import { DialogContent } from "@radix-ui/react-dialog"
 
 function ChatBottonBar() {
   const [message, setMessage] = useState("")
@@ -29,6 +32,8 @@ function ChatBottonBar() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const { soundEnabled } = usePreferences()
   const { selectedUser } = useSelectedUser()
+  const { user: currentUser } = useKindeBrowserClient()
+  const queryClient = useQueryClient()
 
   const [playSound1] = useSound("/sounds/keystroke1.mp3")
   const [playSound2] = useSound("/sounds/keystroke2.mp3")
@@ -69,6 +74,31 @@ function ChatBottonBar() {
       setMessage(message + "\n")
     }
   }
+
+  useEffect(() => {
+    const channelName = `${currentUser?.id}__${selectedUser?.id}`
+      .split("__")
+      .sort()
+      .join("__")
+    const channel = pusherClient?.subscribe(channelName)
+
+    const handleMessage = (data: { message: Message }) => {
+      queryClient.setQueryData(
+        ["messages", selectedUser?.id],
+        (oldMessages: Message[]) => {
+          return [...oldMessages, data.message]
+        }
+      )
+    }
+
+    channel.bind("newMessage", handleMessage)
+
+    return () => {
+      channel?.unbind("newMessage", handleMessage)
+      pusherClient?.unsubscribe(channelName)
+    }
+
+  }, [currentUser?.id, selectedUser?.id, queryClient])
 
   return (
     <div className="p-2 flex justify-between w-full items-center gap-2">
