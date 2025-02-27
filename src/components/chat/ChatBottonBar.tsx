@@ -97,7 +97,6 @@ function ChatBottonBar() {
       channel?.unbind("newMessage", handleMessage)
       pusherClient?.unsubscribe(channelName)
     }
-
   }, [currentUser?.id, selectedUser?.id, queryClient])
 
   return (
@@ -106,7 +105,10 @@ function ChatBottonBar() {
         <CldUploadWidget
           signatureEndpoint="/api/sign-cloudinary-params"
           onSuccess={(result, { widget }) => {
-            setImageUrl((result.info as CloudinaryUploadWidgetInfo).secure_url)
+            const url = (result.info as CloudinaryUploadWidgetInfo).secure_url
+            if (url) {
+              setImageUrl(url)
+            }
             widget.close()
           }}
         >
@@ -121,29 +123,38 @@ function ChatBottonBar() {
           }}
         </CldUploadWidget>
       )}
-      <Dialog open={!!imageUrl}>
-        <DialogContent>
+      <Dialog
+        open={!!imageUrl}
+        onOpenChange={(open) => !open && setImageUrl("")}
+      >
+        <DialogContent className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-md w-[90%] p-6 bg-background rounded-lg shadow-lg">
           <DialogHeader>
             <DialogTitle>Image Preview</DialogTitle>
           </DialogHeader>
-          <div className="flex justify-center items-center relative h-96 w-full mx-auto">
-            <Image
-              src={imageUrl}
-              alt="Image Preview"
-              fill
-              className="object-contain"
-            />
+          <div className="mt-4 flex justify-center items-center w-full">
+            <div className="relative h-64 w-full">
+              {imageUrl && (
+                <Image
+                  src={imageUrl}
+                  alt="Image Preview"
+                  fill
+                  className="object-contain"
+                />
+              )}
+            </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="mt-6 flex justify-center">
             <Button
               type="submit"
               onClick={() => {
-                sendMessageMutate({
-                  content: imageUrl,
-                  messageType: "image",
-                  receiverId: selectedUser?.id ?? "",
-                })
+                if (imageUrl) {
+                  sendMessageMutate({
+                    content: imageUrl,
+                    messageType: "image",
+                    receiverId: selectedUser?.id ?? "",
+                  })
+                }
                 setImageUrl("")
               }}
             >
